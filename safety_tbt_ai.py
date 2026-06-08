@@ -20,9 +20,9 @@ else:
 if not api_key:
     str.warning("⚠️ App chalane ke liye kripya left sidebar mein apni Gemini API Key dalein ya Streamlit Secrets mein set karein.")
 else:
-    # Configure Gemini with the correct model
+    # Configure Gemini with the correct active model
     genai.configure(api_key=api_key)
-    model = genai.GenerativeModel('gemini-pro')
+    model = genai.GenerativeModel('gemini-1.5-pro')
 
     # Sidebar Options
     str.sidebar.title("🛠️ Customization")
