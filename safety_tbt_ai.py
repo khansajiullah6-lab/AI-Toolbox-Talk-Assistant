@@ -1,66 +1,69 @@
-import streamlit as st
-from google import genai
+import streamlit as str
+import google.generativeai as genai
 
-# Page Setup
-st.set_page_config(page_title="AI Toolbox Talk Assistant", layout="wide", page_icon="📢")
+# Page Configuration
+str.set_page_config(page_title="AI Toolbox Talk Assistant", layout="wide")
 
-st.title("📢 AI Toolbox Talk (TBT) Assistant")
-st.markdown("Aap jo bhi safety topic yahan likhenge, AI uske upar workers ko samjhane ke liye **TBT Points** taiyaar kar dega.")
+# Title and Description
+str.title("📢 AI Toolbox Talk (TBT) Assistant")
+str.write("Aap jo bhi safety topic yahan likhenge, AI uske upar workers ko samjhane ke liye TBT Points taiyaar kar dega.")
 
-# Sidebar for API Key
-st.sidebar.markdown("## 🔑 AI Configuration")
-api_key = st.sidebar.text_input("Apni Google Gemini API Key yahan dalein:", type="password")
+# 🔑 API Key Logic (First check Streamlit Secrets, then check Sidebar)
+api_key = None
+
+if "GEMINI_API_KEY" in str.secrets:
+    api_key = str.secrets["GEMINI_API_KEY"]
+else:
+    str.sidebar.title("🔑 AI Configuration")
+    api_key = str.sidebar.text_input("Apni Google Gemini API Key yahan dalein:", type="password")
 
 if not api_key:
-    st.warning("⚠️ App chalane ke liye kripya left sidebar mein apni Gemini API Key dalein.")
+    str.warning("⚠️ App chalane ke liye kripya left sidebar mein apni Gemini API Key dalein ya Streamlit Secrets mein set karein.")
 else:
-    try:
-        client = genai.Client(api_key=api_key)
-    except Exception as e:
-        st.error(f"Initialization Error: {e}")
+    # Configure Gemini
+    genai.configure(api_key=api_key)
+    model = genai.GenerativeModel('gemini-1.5-flash')
 
-    # User Input Section
-    st.subheader("📝 Apna Safety Topic Dalein")
+    # Sidebar Options
+    str.sidebar.title("🛠️ Customization")
+    language = str.sidebar.selectbox("Language Select Karein:", ["Hinglish", "Hindi", "English"])
     
-    col1, col2 = st.columns([2, 1])
-    with col1:
-        topic = st.text_input("Topic Name (e.g., Working at Height, Electrical Safety, Lifting):")
-    with col2:
-        language = st.selectbox("TBT Ki Bhasha (Language):", ["Hinglish (Simple Hindi + English)", "Pure Hindi", "English"])
+    # Sector focus context
+    sector = str.sidebar.selectbox("Sector / Project Type:", ["Mega Construction Project", "Oil & Gas Sector (Upstream/Downstream)", "General Industrial"])
 
-    prompt = f"""
-    You are an expert HSE Officer. Generate a professional, practical, and highly engaging Toolbox Talk (TBT) on the topic: '{topic}'.
-    The language of the response must be strictly in {language}.
-    
-    Structure the response exactly like this:
-    1. **Topic Title** (Bold)
-    2. **Main Hazards (Khatre):** 3-4 bullet points of major risks.
-    3. **Safe Work Practices (Suraksha ke Niyam):** 5-6 practical points for site workers.
-    4. **PPE Required:** List of mandatory PPE.
-    5. **5-Minute Summary/Slogan:** A short catchy line to ask workers at the end.
-    """
+    # Main Input
+    topic = str.text_input("Safety Topic Yahan Type Karein (e.g., Working at Height, LOTO, H2S Safety):")
 
-    if st.button("🚀 AI Se TBT Content Generate Karein"):
-        if not topic:
-            st.error("Kripya koi topic likhein!")
-        else:
-            with st.spinner("⏳ AI aapka safety content taiyaar kar raha hai..."):
+    if str.button("Generate TBT Points"):
+        if topic:
+            with str.spinner("AI aapke liye TBT taiyaar kar raha hai..."):
+                prompt = f"""
+                You are an expert HSE Manager in the {sector}. Generate a comprehensive 5-Minute Toolbox Talk (TBT) on the topic: '{topic}'.
+                
+                The response must be written strictly in the selected language: {language}.
+                Format the output beautifully with clear headings and bullet points:
+                
+                1. Main Hazards (Khatre) - Specific to {sector}
+                2. Safe Work Practices (Suraksha ke Niyam)
+                3. Mandatory PPE Required
+                4. A catchy, memorable 5-Minute Safety Slogan for site workers
+                """
+                
                 try:
-                    # Final stable model for 2026 standard
-                    response = client.models.generate_content(
-                        model='gemini-2.5-flash',
-                        contents=prompt,
-                    )
+                    response = model.generate_content(prompt)
+                    tbt_text = response.text
                     
-                    st.markdown("---")
-                    st.success("🎉 Content Taiyaar Hai!")
-                    st.markdown(response.text)
+                    str.success("✅ Aapka TBT Taiyaar Hai!")
+                    str.markdown(tbt_text)
                     
-                    st.download_button(
+                    # Download Button
+                    str.download_button(
                         label="📄 Download TBT Notes",
-                        data=response.text,
+                        data=tbt_text,
                         file_name=f"TBT_{topic.replace(' ', '_')}.txt",
                         mime="text/plain"
                     )
                 except Exception as e:
-                    st.error(f"Error: {str(e)}")
+                    str.error(f"Error: {e}")
+        else:
+            str.error("Kripya koi safety topic type karein!")
