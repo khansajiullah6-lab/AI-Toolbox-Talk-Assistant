@@ -20,9 +20,8 @@ else:
 if not api_key:
     str.warning("⚠️ App chalane ke liye kripya left sidebar mein apni Gemini API Key dalein ya Streamlit Secrets mein set karein.")
 else:
-    # Configure Gemini with the correct active model
+    # Configure Gemini
     genai.configure(api_key=api_key)
-    model = genai.GenerativeModel('gemini-1.5-pro')
 
     # Sidebar Options
     str.sidebar.title("🛠️ Customization")
@@ -47,21 +46,34 @@ else:
                 4. A catchy, memorable 5-Minute Safety Slogan for site workers
                 """
                 
-                try:
-                    response = model.generate_content(prompt)
-                    tbt_text = response.text
-                    
+                # Smart Multi-Model Fallback Logic (Taaki 404 Error bilkul na aaye)
+                models_to_try = ['gemini-1.5-flash', 'gemini-pro', 'gemini-1.5-pro']
+                response_text = None
+                last_error = ""
+
+                for model_name in models_to_try:
+                    try:
+                        model = genai.GenerativeModel(model_name)
+                        response = model.generate_content(prompt)
+                        response_text = response.text
+                        if response_text:
+                            break
+                    except Exception as e:
+                        last_error = str(e)
+                        continue  # Agar ek model fail ho toh agla try karein
+
+                if response_text:
                     str.success("✅ Aapka TBT Taiyaar Hai!")
-                    str.markdown(tbt_text)
+                    str.markdown(response_text)
                     
                     # Download Button
                     str.download_button(
                         label="📄 Download TBT Notes",
-                        data=tbt_text,
+                        data=response_text,
                         file_name=f"TBT_{topic.replace(' ', '_')}.txt",
                         mime="text/plain"
                     )
-                except Exception as e:
-                    str.error(f"Error: {e}")
+                else:
+                    str.error(f"Google Gemini API error. Please check your API Key or try again later. Details: {last_error}")
         else:
             str.error("Kripya koi safety topic type karein!")
