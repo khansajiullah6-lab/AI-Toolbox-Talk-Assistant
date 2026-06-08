@@ -6,7 +6,7 @@ str.set_page_config(page_title="AI Toolbox Talk Assistant", layout="wide")
 
 # Title and Description
 str.title("📢 AI Toolbox Talk (TBT) Assistant")
-str.write("Aap jo bhi safety topic yahan likhenge, AI uske upar workers ko samjhane ke liye TBT Points taiyaar kar dega.")
+str.write("Generate high-impact, customized 5-Minute Toolbox Talks instantly for heavy industries.")
 
 # 🔑 API Key Logic (First check Streamlit Secrets, then check Sidebar)
 api_key = None
