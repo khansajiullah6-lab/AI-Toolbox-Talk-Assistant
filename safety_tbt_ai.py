@@ -8,7 +8,7 @@ str.set_page_config(page_title="AI Toolbox Talk Assistant", layout="wide")
 str.title("📢 AI Toolbox Talk (TBT) Assistant")
 str.write("Generate high-impact, customized 5-Minute Toolbox Talks instantly for heavy industries.")
 
-# 🔑 API Key Logic (First check Streamlit Secrets, then check Sidebar)
+# 🔑 API Key Logic
 api_key = None
 
 if "GEMINI_API_KEY" in str.secrets:
@@ -20,15 +20,13 @@ else:
 if not api_key:
     str.warning("⚠️ App chalane ke liye kripya left sidebar mein apni Gemini API Key dalein ya Streamlit Secrets mein set karein.")
 else:
-    # Configure Gemini
+    # Configure Gemini with the correct model
     genai.configure(api_key=api_key)
-    model = genai.GenerativeModel('gemini-1.5-flash')
-model = genai.GenerativeModel('gemini-pro')
+    model = genai.GenerativeModel('gemini-pro')
+
     # Sidebar Options
     str.sidebar.title("🛠️ Customization")
     language = str.sidebar.selectbox("Language Select Karein:", ["Hinglish", "Hindi", "English"])
-    
-    # Sector focus context
     sector = str.sidebar.selectbox("Sector / Project Type:", ["Mega Construction Project", "Oil & Gas Sector (Upstream/Downstream)", "General Industrial"])
 
     # Main Input
